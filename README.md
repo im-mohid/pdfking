@@ -6,7 +6,7 @@ Supabase = Postgres + private Storage. Deploy on Render (Docker).
 ## 1. Supabase
 1. New project. **Settings → Database → Connection string → Session pooler** → copy URI into `DATABASE_URL`.
 2. **Settings → API**: `SUPABASE_URL` and the **service_role** key → `SUPABASE_SERVICE_KEY` (server-side only, never in frontend).
-3. Tables and the private bucket are created automatically on first start. RLS is enabled on every table
+3. Open **SQL Editor → New query**, paste `schema.sql` (in this folder) → **Run**. It creates tables, RLS, plans and the private bucket `file-studio`. (The app also auto-creates them if you skip this.)
    (the backend connects as `postgres`, which bypasses RLS, so the public REST API cannot read your data).
 
 ## 2. Google login
