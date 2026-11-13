@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block head %}<script type="application/ld+json">{{ {"@context":"https://schema.org","@type":"WebApplication","name":t.name,"description":t.desc,"applicationCategory":"UtilitiesApplication","operatingSystem":"Any","offers":{"@type":"Offer","price":"0","priceCurrency":"USD"}}|tojson }}</script>{% endblock %}
+{% block content %}
+<nav class="text-sm text-slate-500 mb-4"><a href="/" class="hover:underline">Home</a> › {{ t.cat }} › {{ t.name }}</nav>
+<div class="flex items-start justify-between gap-3"><h1 class="text-3xl font-bold">{{ t.name }}</h1>
+{% if user %}<button id="fav" class="btn2" title="Favorite">{{ '★' if is_fav else '☆' }}</button>{% endif %}</div>
+<p class="mt-2 text-slate-600 dark:text-slate-400">{{ t.desc }}</p>
+<div class="mt-6 grid lg:grid-cols-3 gap-6">
+ <div class="lg:col-span-2 card">
+  <label id="drop" class="block cursor-pointer rounded-xl border-2 border-dashed border-slate-300 dark:border-slate-700 p-10 text-center hover:border-indigo-500">
+   <input id="file" type="file" class="hidden" {% if t.multi %}multiple{% endif %} {% if t.accept != '*' %}accept="{{ t.accept }}"{% endif %}>
+   <div class="font-medium">Drag &amp; drop or click to select {{ 'files' if t.multi else 'a file' }}</div>
+   <div class="text-xs text-slate-500 mt-1">{{ t.accept if t.accept != '*' else 'Any file' }} · max {{ plan.max_mb }} MB each{% if t.multi %} · up to {{ plan.max_files }} files{% endif %}</div></label>
+  <ul id="list" class="mt-3 text-sm space-y-1"></ul>
+  {% for o in t.opts %}<div class="mt-4"><label class="block text-sm font-medium mb-1">{{ o.label }}</label>
+   {% if o.type == 'select' %}<select data-opt="{{ o.name }}" class="inp">{% for c in o.choices %}<option {{ 'selected' if c == o.default }}>{{ c }}</option>{% endfor %}</select>
+   {% else %}<input data-opt="{{ o.name }}" type="{{ o.type }}" value="{{ o.default }}" autocomplete="off" class="inp">{% endif %}</div>{% endfor %}
+  {% if plan.rank < t.rank %}<div class="mt-4 rounded-lg bg-amber-50 dark:bg-amber-950 text-amber-800 dark:text-amber-200 px-3 py-2 text-sm">This tool needs {{ 'a free account' if t.rank == 1 else 'the Pro plan' }}. <a class="underline" href="{{ '/register' if t.rank == 1 and not user else '/pricing' }}">{{ 'Create free account' if t.rank == 1 and not user else 'See plans' }}</a></div>{% endif %}
+  <button id="go" class="btn w-full mt-6 !py-3" disabled>{{ t.name }}</button>
+  <div id="bar" class="hidden mt-4"><div class="h-2 rounded bg-slate-200 dark:bg-slate-800 overflow-hidden"><div id="fill" class="h-2 bg-indigo-600 w-0"></div></div>
+   <div class="flex justify-between mt-1 text-xs text-slate-500"><span id="st"></span><button id="cancel" class="underline hidden">Cancel</button></div></div>
+  <div id="err" class="hidden mt-4 rounded-lg bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 px-4 py-2 text-sm"></div>
+  <div id="ok" class="hidden mt-4 rounded-lg bg-emerald-50 dark:bg-emerald-950 p-4 text-sm"></div>
+ </div>
+ <aside class="space-y-4">
+  <div class="card text-sm"><div class="font-semibold">Your usage today</div><div class="mt-1">{{ used }} / {{ plan.daily_jobs }} jobs · {{ plan.name }} plan</div>
+   {% if not user %}<a href="/register" class="text-indigo-600 hover:underline">Free account = higher limits</a>{% else %}<a href="/pricing" class="text-indigo-600 hover:underline">Compare plans</a>{% endif %}</div>
+  {% if t.note %}<div class="card text-sm"><div class="font-semibold">Limitations</div><p class="mt-1 text-slate-500">{{ t.note }}</p></div>{% endif %}
+  {% if related %}<div class="card text-sm"><div class="font-semibold mb-2">Related tools</div>{% for r in related %}<a class="block py-1 hover:underline" href="/tools/{{ r.slug }}">{{ r.name }}</a>{% endfor %}</div>{% endif %}
+ </aside></div>
+<section class="mt-8"><h2 class="font-semibold text-lg">FAQ</h2>
+ <details class="mt-2 text-sm"><summary class="cursor-pointer">Are my files safe?</summary><p class="mt-1 text-slate-500">Files are processed on our servers, never sent to AI or third-party processors, stored privately and deleted automatically ({{ plan.retention_hours }}h retention on your plan).</p></details>
+ <details class="mt-2 text-sm"><summary class="cursor-pointer">What if the result is invalid?</summary><p class="mt-1 text-slate-500">Every output is validated before you can download it. If validation fails you get an error, never a broken file.</p></details>
+ <details class="mt-2 text-sm"><summary class="cursor-pointer">What are the limits?</summary><p class="mt-1 text-slate-500">{{ plan.max_mb }} MB per file, {{ plan.max_files }} files per batch, {{ plan.daily_jobs }} jobs per day on the {{ plan.name }} plan.</p></details></section>
+<script>
+const SLUG="{{ t.slug }}",MULTI={{ 'true' if t.multi else 'false' }};let files=[],job=null,timer=null;
+const $=id=>document.getElementById(id),fmt=n=>n>1048576?(n/1048576).toFixed(2)+' MB':(n/1024).toFixed(1)+' KB',esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function show(){$('list').innerHTML=files.map((f,i)=>`<li class="flex justify-between"><span>📄 ${esc(f.name)} <span class="text-slate-500">(${fmt(f.size)})</span></span><button class="text-red-500" onclick="files.splice(${i},1);show()">✕</button></li>`).join('');$('go').disabled=!files.length}
+function add(l){files=MULTI?[...files,...l]:[l[0]];show()}
+$('file').onchange=e=>{add([...e.target.files]);e.target.value=''};
+['dragover','drop'].forEach(ev=>$('drop').addEventListener(ev,e=>{e.preventDefault();if(ev==='drop'&&e.dataTransfer.files.length)add([...e.dataTransfer.files])}));
+function fail(m){clearInterval(timer);$('bar').classList.add('hidden');$('go').disabled=!files.length;$('err').innerHTML=esc(m);$('err').classList.remove('hidden')}
+function done(r){clearInterval(timer);$('bar').classList.add('hidden');$('go').disabled=false;const o=r.out;
+ if(!o){fail('Output expired.');return}
+ let pv='';if(o.kind==='image')pv=`<img src="${o.inline}" class="mt-3 max-h-72 rounded border">`;else if(o.kind==='pdf')pv=`<iframe src="${o.inline}" class="mt-3 w-full h-96 rounded border"></iframe>`;else if(r.preview)pv=`<pre class="mt-3 max-h-64 overflow-auto rounded bg-white dark:bg-slate-900 p-3 text-xs whitespace-pre-wrap">${esc(r.preview)}</pre>`;
+ $('ok').innerHTML=`<div class="font-semibold">Done: ${esc(o.name)}</div><div class="text-slate-500">${fmt(r.in_size)} → ${fmt(o.size)}</div><a href="${o.url}" class="btn mt-3">Download</a>${pv}`;$('ok').classList.remove('hidden')}
+async function poll(){const r=await fetch('/api/job/'+job).then(x=>x.json()).catch(()=>null);if(!r)return;
+ if(r.status==='queued')$('st').textContent='Queued…';else if(r.status==='running')$('st').textContent='Processing…';
+ else if(r.status==='done')done(r);else if(r.status==='failed'||r.status==='cancelled'){fail(r.error||r.status);$('err').innerHTML+=` <button class="underline ml-2" id="retry">Retry</button>`;$('retry').onclick=retry}}
+async function retry(){$('err').classList.add('hidden');const r=await fetch('/api/job/'+job+'/retry',{method:'POST'});const j=await r.json();if(!r.ok)return fail(j.error);start(j.job_id)}
+function start(id){job=id;$('bar').classList.remove('hidden');$('cancel').classList.remove('hidden');$('fill').style.width='100%';$('fill').classList.add('animate-pulse');timer=setInterval(poll,1000);poll()}
+$('cancel').onclick=async()=>{await fetch('/api/job/'+job+'/cancel',{method:'POST'});poll()};
+$('go').onclick=()=>{const fd=new FormData(),o={};files.forEach(f=>fd.append('files',f));document.querySelectorAll('[data-opt]').forEach(e=>o[e.dataset.opt]=e.value);fd.append('opts',JSON.stringify(o));
+ ['err','ok'].forEach(i=>$(i).classList.add('hidden'));$('bar').classList.remove('hidden');$('go').disabled=true;$('cancel').classList.add('hidden');$('fill').classList.remove('animate-pulse');$('fill').style.width='0';
+ const x=new XMLHttpRequest();x.open('POST','/api/run/'+SLUG);
+ x.upload.onprogress=e=>{if(e.lengthComputable){$('fill').style.width=(e.loaded/e.total*100)+'%';$('st').textContent='Uploading '+Math.round(e.loaded/e.total*100)+'%'}};
+ x.onload=()=>{let r={};try{r=JSON.parse(x.responseText)}catch{}if(x.status===202)start(r.job_id);else fail((r.error||'Something went wrong.')+(r.upgrade?' See Pricing for higher limits.':''))};
+ x.onerror=()=>fail('Network error.');x.send(fd)};
+{% if user %}$('fav').onclick=async()=>{const r=await fetch('/fav/'+SLUG,{method:'POST'}).then(x=>x.json());$('fav').textContent=r.fav?'★':'☆'};{% endif %}
+</script>{% endblock %}

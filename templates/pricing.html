@@ -1,0 +1,9 @@
+{% extends "base.html" %}{% block content %}
+<h1 class="text-3xl font-bold text-center">Simple, honest pricing</h1><p class="text-center text-slate-500 mt-2">Limits below are enforced on the server and shown exactly as configured.</p>
+<div class="mt-8 grid sm:grid-cols-2 lg:grid-cols-4 gap-4">{% for p in plans %}
+ <div class="card {{ 'ring-2 ring-indigo-500' if p.key == 'pro' }}"><div class="font-bold text-lg">{{ p.name }}</div><div class="text-3xl font-extrabold mt-1">${{ '%g'|format(p.price) }}<span class="text-sm font-normal text-slate-500">/mo</span></div>
+  <ul class="mt-4 space-y-1.5 text-sm"><li>{{ p.daily_jobs }} jobs / day</li><li>{{ p.max_mb }} MB per file</li><li>{{ p.max_files }} files per batch</li><li>{{ p.concurrent }} concurrent job(s)</li><li>{{ 'Priority' if p.priority else 'Standard' }} queue</li>
+   <li>{{ p.storage_mb }} MB cloud storage</li><li>Files kept {{ p.retention_hours }}h</li><li>{{ 'API: %d req/min'|format(p.api_rpm) if p.api_rpm else 'No API' }}</li>
+   <li>{{ ['Core tools (no signup)','+ account tools','+ Pro tools (compare, redact, watermark, tables…)','+ everything'][p.rank] }}</li></ul>
+  <a class="btn w-full text-center mt-5" href="{{ '/' if p.rank == 0 else '/register' if p.rank == 1 else '/contact' }}">{{ 'Use now' if p.rank == 0 else 'Get started' if p.rank == 1 else 'Contact to upgrade' }}</a></div>{% endfor %}</div>
+<p class="text-center text-xs text-slate-500 mt-6">Online checkout is not enabled yet: paid plans are activated by our team after you contact us.</p>{% endblock %}

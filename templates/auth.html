@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block content %}
+<div class="max-w-md mx-auto card !p-8">
+ <h1 class="text-2xl font-bold mb-4">{{ {'login':'Welcome back','register':'Create your account','forgot':'Reset password','reset':'Choose a new password'}[mode] }}</h1>
+ {% if error %}<div class="mb-3 rounded-lg bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-300 px-3 py-2 text-sm">{{ error }}</div>{% endif %}
+ {% if info %}<div class="mb-3 rounded-lg bg-emerald-50 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 px-3 py-2 text-sm">{{ info }}</div>{% endif %}
+ {% if google and mode in ('login','register') %}<a href="/auth/google" class="btn2 w-full text-center !py-2.5 font-medium">Continue with Google</a><div class="text-center text-xs text-slate-400 my-3">or</div>{% endif %}
+ <form method="post" action="{{ '/reset/' ~ token if mode == 'reset' else '/' ~ mode }}" class="space-y-3">
+  {% if mode == 'register' %}<input name="name" placeholder="Full name" required class="inp">{% endif %}
+  {% if mode != 'reset' %}<input name="email" type="email" placeholder="Email" required class="inp">{% endif %}
+  {% if mode != 'forgot' %}<input name="password" type="password" placeholder="{{ 'New password' if mode == 'reset' else 'Password' }} (min 8)" minlength="8" required class="inp">{% endif %}
+  <button class="btn w-full !py-2.5">{{ {'login':'Login','register':'Sign up','forgot':'Send reset link','reset':'Save password'}[mode] }}</button></form>
+ <div class="mt-4 text-sm text-slate-500 flex justify-between">{% if mode == 'login' %}<a href="/forgot" class="hover:underline">Forgot password?</a><a href="/register" class="hover:underline">Create account</a>{% else %}<a href="/login" class="hover:underline">Back to login</a>{% endif %}</div>
+</div>{% endblock %}

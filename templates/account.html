@@ -1,0 +1,13 @@
+{% extends "base.html" %}{% block content %}
+<h1 class="text-2xl font-bold">Account</h1>
+<div class="mt-6 grid md:grid-cols-2 gap-4">
+ <form method="post" action="/account/profile" class="card space-y-3"><div class="font-semibold">Profile</div><div class="text-sm text-slate-500">{{ user.email }} · {{ plan.name }} plan</div><input name="name" value="{{ user.name }}" class="inp"><button class="btn">Save</button></form>
+ <form method="post" action="/account/password" class="card space-y-3"><div class="font-semibold">{{ 'Change' if user.pw_hash else 'Set' }} password</div>{% if user.pw_hash %}<input name="current" type="password" placeholder="Current password" class="inp">{% endif %}<input name="new" type="password" minlength="8" placeholder="New password (min 8)" class="inp"><button class="btn">Update</button></form>
+</div>
+<div class="card mt-4"><div class="font-semibold">API keys</div>
+ {% if newkey %}<div class="mt-2 rounded bg-emerald-50 dark:bg-emerald-950 p-3 text-sm break-all">Copy now (shown once): <code>{{ newkey }}</code></div>{% endif %}
+ {% if plan.api_rpm > 0 %}<form method="post" action="/account/keys" class="mt-3 flex gap-2"><input name="name" placeholder="Key name" class="inp !w-48"><button class="btn">Create key</button></form>
+ {% else %}<p class="text-sm text-slate-500 mt-2">API access is included in the Business plan. <a class="underline" href="/pricing">See plans</a></p>{% endif %}
+ <table class="w-full text-sm mt-3"><tbody>{% for k in keys %}<tr class="border-t border-slate-100 dark:border-slate-800"><td class="py-2">{{ k.name }} <code class="text-xs">{{ k.prefix }}…</code></td><td>{{ k.calls }} calls/24h</td><td>{{ 'revoked' if k.revoked else 'active' }}</td><td>{% if not k.revoked %}<form method="post" action="/account/keys/{{ k.id }}/revoke"><button class="text-red-600 underline">Revoke</button></form>{% endif %}</td></tr>{% endfor %}</tbody></table>
+ {% if logs %}<div class="text-xs text-slate-500 mt-3">Recent requests: {% for l in logs %}{{ l.tool }} ({{ l.status }}){{ ', ' if not loop.last }}{% endfor %}</div>{% endif %}</div>
+<form method="post" action="/account/delete" class="card mt-4 space-y-2"><div class="font-semibold text-red-600">Delete account</div><p class="text-sm text-slate-500">Deletes your account, files and history permanently.</p><input name="confirm" placeholder="Type DELETE" class="inp !w-48"><button class="btn !bg-red-600">Delete my account</button></form>{% endblock %}

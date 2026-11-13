@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block content %}
+<h1 class="text-2xl font-bold">My Files</h1><p class="text-sm text-slate-500">{{ '%.1f'|format(storage) }} / {{ plan.storage_mb }} MB used · files expire after {{ plan.retention_hours }}h on the {{ plan.name }} plan.</p>
+<form class="mt-4 flex flex-wrap gap-2"><input name="q" value="{{ q }}" placeholder="Search…" class="inp !w-48">
+ <select name="kind" class="inp !w-36"><option value="">All types</option>{% for k in ['pdf','image','doc','sheet','archive','text','other'] %}<option {{ 'selected' if kind==k }}>{{ k }}</option>{% endfor %}</select>
+ <select name="sort" class="inp !w-36">{% for k,l in [('new','Newest'),('size','Largest'),('name','Name')] %}<option value="{{ k }}" {{ 'selected' if sort==k }}>{{ l }}</option>{% endfor %}</select><button class="btn">Filter</button></form>
+<div class="mt-4 space-y-2">{% for f in files %}
+ <div class="card !p-3 flex flex-wrap items-center gap-3 text-sm"><div class="flex-1 min-w-[180px]"><div class="font-medium break-all">{{ f.name }}</div><div class="text-xs text-slate-500">{{ f.kind }} · {{ '%.1f'|format(f.size/1024) }} KB · expires {{ f.expires.strftime('%d %b %H:%M') if f.expires else 'never' }}</div></div>
+  <a class="btn2" href="/f/{{ f.id }}">Download</a>
+  <form method="post" action="/files/{{ f.id }}/rename" class="flex gap-1"><input name="name" value="{{ f.name }}" class="inp !w-36 !py-1"><button class="btn2">Rename</button></form>
+  <form method="post" action="/files/{{ f.id }}/share" class="flex gap-1"><select name="hours" class="inp !w-24 !py-1"><option value="1">1h</option><option value="24" selected>24h</option><option value="168">7d</option></select><button class="btn2">Share</button></form>
+  <form method="post" action="/files/{{ f.id }}/delete"><button class="btn2 text-red-600">Delete</button></form></div>
+{% else %}<div class="card text-sm text-slate-500">No files yet. Processed outputs from your jobs appear here.</div>{% endfor %}</div>{% endblock %}

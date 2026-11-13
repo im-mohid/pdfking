@@ -1,0 +1,10 @@
+{% extends "base.html" %}{% block content %}
+<div class="max-w-3xl mx-auto space-y-4"><h1 class="text-3xl font-bold">API Documentation</h1>
+<p class="text-slate-600 dark:text-slate-400">REST API for Business plans. Create a key in <a class="underline" href="/account">Account</a>. Authenticate with <code>Authorization: Bearer fs_…</code>. Rate limit = your plan's requests/minute.</p>
+{% for title, code in [('List tools','curl -H "Authorization: Bearer $KEY" ' ~ base_url ~ '/api/v1/tools'),
+ ('Run a tool (async)','curl -X POST -H "Authorization: Bearer $KEY" \\\n  -F "files=@a.pdf" -F "files=@b.pdf" \\\n  ' ~ base_url ~ '/api/v1/tools/merge-pdf\n# → {"job_id":"…","status":"queued","status_url":"…"}'),
+ ('Tool options','curl -X POST -H "Authorization: Bearer $KEY" -F "files=@in.pdf" \\\n  -F \'opts={"pages":"1-3"}\' ' ~ base_url ~ '/api/v1/tools/extract-pdf-pages'),
+ ('Poll status','curl -H "Authorization: Bearer $KEY" ' ~ base_url ~ '/api/v1/jobs/JOB_ID\n# status: queued | running | done | failed | cancelled'),
+ ('Download result','curl -L -H "Authorization: Bearer $KEY" -o out.pdf ' ~ base_url ~ '/api/v1/jobs/JOB_ID/download')] %}
+<div class="card"><div class="font-semibold mb-2">{{ title }}</div><pre class="text-xs overflow-x-auto">{{ code }}</pre></div>{% endfor %}
+<p class="text-sm text-slate-500">Errors return JSON <code>{"error": "…"}</code> with 400/401/403/413/429. Outputs expire per your plan's retention.</p></div>{% endblock %}

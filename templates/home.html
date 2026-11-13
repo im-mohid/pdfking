@@ -1,0 +1,19 @@
+{% extends "base.html" %}{% block content %}
+<section class="text-center py-8">
+ <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight">{{ _('hero1') }} <span class="text-indigo-600 dark:text-indigo-400">{{ _('hero2') }}</span></h1>
+ <p class="mt-4 text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">{{ _('hero_sub') }}</p>
+ <input id="q" type="search" placeholder="{{ _('search') }}" class="inp mt-6 max-w-md !py-3 !rounded-xl">
+ <div class="mt-4 flex flex-wrap justify-center gap-2 text-sm"><button class="btn2 cat" data-c="">All</button>{% for c in cats %}<button class="btn2 cat" data-c="{{ c }}">{{ c }}</button>{% endfor %}</div>
+</section>
+{% if favs %}<h2 class="mt-6 mb-2 font-semibold">★ Favorites</h2><div class="flex flex-wrap gap-2">{% for s in favs if s in tools %}<a class="btn2" href="/tools/{{ s }}">{{ tools[s].name }}</a>{% endfor %}</div>{% endif %}
+<div id="grid" class="mt-8 grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+{% for t in tools.values() %}
+ <a href="/tools/{{ t.slug }}" data-c="{{ t.cat }}" data-n="{{ (t.name ~ ' ' ~ t.desc)|lower }}" class="tool card hover:border-indigo-500 hover:shadow transition block">
+  <div class="flex items-center justify-between"><span class="font-semibold">{{ t.name }}</span>
+   {% if t.rank == 2 %}<span class="text-[10px] font-bold rounded bg-amber-100 text-amber-800 px-1.5 py-0.5">PRO</span>{% elif t.rank == 1 %}<span class="text-[10px] font-bold rounded bg-sky-100 text-sky-800 px-1.5 py-0.5">FREE ACCOUNT</span>{% endif %}</div>
+  <p class="text-sm text-slate-500 mt-1">{{ t.desc }}</p><div class="text-xs text-slate-400 mt-2">{{ t.cat }}</div></a>
+{% endfor %}</div>
+<script>
+let cat='';const f=()=>{const v=q.value.toLowerCase();document.querySelectorAll('.tool').forEach(e=>e.style.display=(e.dataset.n.includes(v)&&(!cat||e.dataset.c===cat))?'':'none')};
+q.oninput=f;document.querySelectorAll('.cat').forEach(b=>b.onclick=()=>{cat=b.dataset.c;f()});
+</script>{% endblock %}

@@ -1,1 +1,39 @@
-
+<!doctype html>
+<html lang="{{ lang }}">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>{{ title }}</title><meta name="description" content="{{ desc or title }}">
+<link rel="canonical" href="{{ base_url }}{{ path }}">
+<meta property="og:title" content="{{ title }}"><meta property="og:description" content="{{ desc or title }}"><meta property="og:type" content="website"><meta name="twitter:card" content="summary">
+<script>if(localStorage.theme==='dark'||(!localStorage.theme&&matchMedia('(prefers-color-scheme:dark)').matches))document.documentElement.classList.add('dark')</script>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config={darkMode:'class'}</script>
+<style type="text/tailwindcss">
+@layer components{
+ .card{@apply rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5}
+ .inp{@apply w-full rounded-lg border border-slate-300 dark:border-slate-700 bg-transparent px-3 py-2 text-sm}
+ .btn{@apply inline-block rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-4 py-2 text-sm disabled:opacity-50}
+ .btn2{@apply inline-block rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 text-sm}
+}</style>
+{% block head %}{% endblock %}
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-200 min-h-screen flex flex-col">
+<header class="border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur sticky top-0 z-10">
+<nav class="max-w-6xl mx-auto px-4 h-14 flex items-center justify-between gap-3 text-sm">
+ <a href="/" class="font-bold text-indigo-600 dark:text-indigo-400 text-base">{{ brand }}</a>
+ <div class="flex items-center gap-3 flex-wrap justify-end">
+  <a href="/" class="hidden sm:inline hover:underline">{{ _('tools') }}</a><a href="/pricing" class="hover:underline">{{ _('pricing') }}</a>
+  <a href="/lang/{{ 'bn' if lang=='en' else 'en' }}" class="hover:underline">{{ 'বাংলা' if lang=='en' else 'EN' }}</a>
+  <button onclick="document.documentElement.classList.toggle('dark');localStorage.theme=document.documentElement.classList.contains('dark')?'dark':'light'" class="btn2" aria-label="Toggle theme">◐</button>
+  {% if user %}{% if user.is_admin %}<a href="/admin" class="hover:underline">Admin</a>{% endif %}
+   <a href="/dashboard" class="hover:underline">{{ _('dashboard') }}</a><a href="/files" class="hover:underline">{{ _('files') }}</a><a href="/account" class="hover:underline">{{ user.name }}</a><a href="/logout" class="hover:underline">{{ _('logout') }}</a>
+  {% else %}<a href="/login" class="hover:underline">{{ _('login') }}</a><a href="/register" class="btn">{{ _('signup') }}</a>{% endif %}
+ </div>
+</nav></header>
+{% if announce %}<div class="bg-indigo-600 text-white text-center text-sm py-1.5 px-3">{{ announce }}</div>{% endif %}
+{% if maint %}<div class="bg-amber-500 text-black text-center text-sm py-1.5">Maintenance mode: processing is paused.</div>{% endif %}
+{% if flash %}<div class="max-w-6xl mx-auto w-full px-4 mt-4"><div class="rounded-lg bg-indigo-50 dark:bg-indigo-950 text-indigo-800 dark:text-indigo-200 px-4 py-2 text-sm break-all">{{ flash }}</div></div>{% endif %}
+<main class="flex-1 max-w-6xl mx-auto w-full px-4 py-8">{% block content %}{% endblock %}</main>
+<footer class="border-t border-slate-200 dark:border-slate-800 py-6 text-center text-sm text-slate-500">
+ © {{ brand }} · <a href="/pricing" class="hover:underline">Pricing</a> · <a href="/api-docs" class="hover:underline">API</a> · <a href="/contact" class="hover:underline">Support</a> · <a href="/privacy" class="hover:underline">Privacy</a> · <a href="/terms" class="hover:underline">Terms</a>
+</footer></body></html>
