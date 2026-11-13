@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: file-studio
+    runtime: docker
+    plan: free          # use "starter" for real traffic (free sleeps + 512MB RAM)
+    healthCheckPath: /health
+    envVars:
+      - { key: SECRET_KEY, generateValue: true }
+      - { key: SUPABASE_BUCKET, value: file-studio }
+      - { key: BRAND, value: Advanced File Studio }
+      - { key: BASE_URL, sync: false }              # https://your-app.onrender.com
+      - { key: DATABASE_URL, sync: false }          # Supabase Session pooler URI
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SERVICE_KEY, sync: false }  # service_role key (server only!)
+      - { key: ADMIN_EMAIL, sync: false }
+      - { key: GOOGLE_CLIENT_ID, sync: false }
+      - { key: GOOGLE_CLIENT_SECRET, sync: false }
+      - { key: RESEND_API_KEY, sync: false }
+      - { key: MAIL_FROM, sync: false }
