@@ -4,7 +4,11 @@ from sqlalchemy import (Boolean, Column, DateTime, Float, ForeignKey, Integer, S
 from sqlalchemy.orm import declarative_base, sessionmaker
 
 def _url():
-    u = os.getenv("DATABASE_URL", "sqlite:///./local.db").replace("postgres://", "postgresql://", 1)
+    u = (os.getenv("DATABASE_URL") or "").strip()
+    if not u:
+        if os.getenv("RENDER"): raise RuntimeError("DATABASE_URL is not set. Render -> your service -> Environment -> add DATABASE_URL (Supabase Session pooler URI).")
+        u = "sqlite:///./local.db"
+    u = u.replace("postgres://", "postgresql://", 1)
     if u.startswith("postgresql") and "sslmode" not in u and "localhost" not in u:
         u += ("&" if "?" in u else "?") + "sslmode=require"   # Supabase requires SSL
     return u

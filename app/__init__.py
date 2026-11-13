@@ -9,6 +9,6 @@ def _load(p):
         ln = ln.strip()
         if not ln or ln.startswith("#") or "=" not in ln: continue
         k, v = ln.split("=", 1); k, v = k.strip(), v.strip().strip('"').strip("'")
-        if k and v and k not in os.environ: os.environ[k] = v
+        if k and v and not os.environ.get(k): os.environ[k] = v
 
 _load(Path(__file__).resolve().parent.parent / ".env")
